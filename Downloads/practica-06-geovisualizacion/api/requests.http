@@ -1,0 +1,26 @@
+### Health check
+GET http://127.0.0.1:8000/api/health
+
+### Species catalog
+GET http://127.0.0.1:8000/api/especies
+
+### Geocode a place
+GET http://127.0.0.1:8000/api/geo/buscar?name=Jutiapa
+
+### Climate
+GET http://127.0.0.1:8000/api/geo/clima?lat=14.29&lon=-89.89
+
+### SoilGrids soil sample
+GET http://127.0.0.1:8000/api/geo/suelo?lat=14.29&lon=-89.89
+
+### GBIF occurrences for first seeded species
+GET http://127.0.0.1:8000/api/geo/ocurrencias?species_id=1&limit=100
+
+### Normalized geospatial suitability analysis
+GET http://127.0.0.1:8000/api/geo/analisis?lat=14.29&lon=-89.89&species_id=1&place=Jutiapa%2C%20Guatemala
+
+### Saved analyses history
+GET http://127.0.0.1:8000/api/geo/historial
+
+### Saved analysis reports
+GET http://127.0.0.1:8000/api/geo/reportes

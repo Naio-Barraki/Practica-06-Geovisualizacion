@@ -1,0 +1,18 @@
+# Dependencias Composer
+/api/vendor/
+/vendor/
+
+# Secretos y configuración local
+.env
+.env.*
+!.env.example
+
+# Sistema operativo / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Evidencia aún no tomada
+# (captura.png debe añadirse manualmente cuando el visor funcione)

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08151b">
+  <title>Observatorio Global de Cultivos · Práctica 06</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
+  </script>
+  <script type="module" src="main.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Inicio Observatorio Global">
+        <span class="brand-mark">✳</span>
+        <span><strong>PHYTO<span>ATLAS</span></strong><small>OBSERVATORIO GLOBAL DE CULTIVOS</small></span>
+      </a>
+      <div class="topbar-right">
+        <span class="course-tag">PRÁCTICA 06 <i>·</i> GEOVISUALIZACIÓN</span>
+        <span id="apiStatus" class="status-chip pending"><i></i><span>Comprobando servicios…</span></span>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro-row">
+        <div>
+          <p class="eyebrow">DATOS DEL PLANETA · DECISIONES AGRONÓMICAS</p>
+          <h1>Explora el mundo <em>cultivable.</em></h1>
+          <p class="intro-copy">Cruza clima, suelo y biodiversidad real para explorar dónde podría desarrollarse mejor una especie.</p>
+        </div>
+        <div class="source-pills" aria-label="Fuentes externas">
+          <span><b class="dot dot-blue"></b>Open-Meteo</span><span><b class="dot dot-yellow"></b>NASA POWER</span><span><b class="dot dot-green"></b>GBIF</span><span><b class="dot dot-violet"></b>SoilGrids</span>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="control-panel panel">
+          <div class="panel-heading"><span class="step-number">01</span><div><h2>Área de estudio</h2><p>Elige la especie y la ubicación</p></div></div>
+          <label class="field-label" for="speciesSelect">Especie del catálogo</label>
+          <select id="speciesSelect"><option value="1">Cargando catálogo…</option></select>
+          <div id="speciesMeta" class="species-meta">Óptimos de referencia cargados desde MySQL.</div>
+
+          <div class="divider"></div>
+          <label class="field-label" for="placeSearch">Buscar lugar</label>
+          <div class="search-row"><input id="placeSearch" type="search" placeholder="Ej. Jutiapa, Guatemala" maxlength="120"><button id="searchPlaceBtn" class="icon-button" title="Buscar lugar" aria-label="Buscar lugar">⌕</button></div>
+          <div id="searchResults" class="search-results" hidden></div>
+
+          <div class="coord-grid">
+            <div><label class="field-label" for="latInput">Latitud</label><input id="latInput" type="number" min="-90" max="90" step="0.0001" value="14.291"></div>
+            <div><label class="field-label" for="lonInput">Longitud</label><input id="lonInput" type="number" min="-180" max="180" step="0.0001" value="-89.895"></div>
+          </div>
+          <label class="field-label" for="placeLabel">Nombre de la ubicación</label>
+          <input id="placeLabel" type="text" value="Jutiapa, Guatemala" maxlength="180">
+          <button id="analyzeBtn" class="primary-button"><span>⌖</span> Analizar ubicación</button>
+
+          <div class="divider"></div>
+          <div class="panel-heading smaller"><span class="step-number">02</span><div><h2>Comparación geográfica A/B</h2><p>Compara dos coordenadas</p></div></div>
+          <div class="ab-compact">
+            <button id="setABtn" class="location-slot active"><span class="slot-dot a-dot">A</span><span><strong id="aName">Jutiapa, Guatemala</strong><small id="aCoords">14.291, -89.895</small></span><b id="aBadge">SELECCIONADA</b></button>
+            <button id="setBBtn" class="location-slot"><span class="slot-dot b-dot">B</span><span><strong id="bName">Córdoba, España</strong><small id="bCoords">37.888, -4.779</small></span><b id="bBadge">FIJAR AQUÍ</b></button>
+          </div>
+          <p class="helper">Haz clic en el globo o busca un lugar y después guárdalo como A o B.</p>
+          <button id="compareBtn" class="secondary-button">Comparar ubicación A vs. B <span>↗</span></button>
+          <button id="loadOccurrencesBtn" class="ghost-button">Mostrar ocurrencias GBIF para esta especie</button>
+        </aside>
+
+        <section class="globe-panel panel">
+          <div class="globe-head"><div><span class="live-kicker"><i></i> MAPA INTERACTIVO</span><h2>Globo de biodiversidad</h2></div><div class="globe-tools"><span class="drag-hint">Arrastra para orbitar · clic para elegir</span><button id="resetGlobeBtn" class="small-tool" title="Restablecer vista">↺ Vista</button></div></div>
+          <div id="globeWrap" class="globe-wrap"><div id="globeCanvas"></div><div class="globe-axis">WGS84 · LAT/LON</div><div class="globe-legend"><span><i class="a-legend"></i> Ubicación A</span><span><i class="b-legend"></i> Ubicación B</span><span><i class="gbif-legend"></i> Ocurrencias GBIF</span></div><div id="globeLoading" class="globe-loading"><span class="loading-orb"></span><p>Construyendo globo 3D…</p></div></div>
+          <div class="globe-footer"><span id="selectedCoordinate">Punto seleccionado: 14.2910°, -89.8950°</span><span id="occurrenceStatus">Ocurrencias GBIF: aún no cargadas</span></div>
+          <div class="earth-attribution">Textura terrestre: <a href="https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-map/" target="_blank" rel="noopener">NASA Blue Marble</a> · capa de nubes ilustrativa; no representa el tiempo atmosférico en vivo.</div>
+          <div class="data-quality-note"><span>ⓘ</span><p>Las ocurrencias muestran registros georreferenciados de GBIF, no una estimación de abundancia. La falta de registros no confirma ausencia de una especie.</p></div>
+        </section>
+
+        <aside class="inspector-panel panel">
+          <div class="panel-heading"><span class="step-number">03</span><div><h2>Lectura del territorio</h2><p id="analysisLocationTitle">Datos reales de la ubicación seleccionada</p></div></div>
+          <div class="kpi-grid">
+            <article class="kpi-card"><span>Temperatura actual</span><strong id="kpiTemp">—<small> °C</small></strong><small id="kpiTempSub">Open-Meteo</small></article>
+            <article class="kpi-card"><span>Precipitación anual</span><strong id="kpiRain">—<small> mm</small></strong><small>NASA POWER · año previo</small></article>
+            <article class="kpi-card"><span>Radiación media</span><strong id="kpiSolar">—<small> kWh</small></strong><small>NASA POWER · media diaria</small></article>
+            <article class="kpi-card"><span>GBIF en ventana local</span><strong id="kpiGbif">—</strong><small>Ventana aproximada ±2°</small></article>
+          </div>
+          <div class="suitability-card"><div class="suitability-title"><div><span class="field-label">ÍNDICE DE IDONEIDAD</span><p>Indicador heurístico educativo</p></div><span id="riskBadge" class="risk-badge neutral">SIN DATOS</span></div><div class="score-row"><strong id="suitabilityScore">—</strong><span>/ 100</span><div class="score-track"><i id="scoreBar"></i></div></div><div id="scoreSummary" class="muted-copy">Analiza una ubicación para calcular sus componentes disponibles.</div></div>
+
+          <div class="subpanel"><div class="subpanel-title"><h3>Suelo superficial</h3><span id="soilStatus" class="source-state">PENDIENTE</span></div><div id="soilDetails" class="soil-details"><p>Se consultará SoilGrids (ISRIC). Si la API no está disponible, los valores quedarán sin dato; no se reemplazarán por valores inventados.</p></div></div>
+          <div class="subpanel"><div class="subpanel-title"><h3>Reglas geo-agronómicas</h3><span id="rulesCount" class="source-state">0 REGLAS</span></div><div id="recommendations" class="recommendations"><p>Las recomendaciones aparecerán después del análisis.</p></div></div>
+          <button id="saveAnalysisBtn" class="primary-button" disabled>Guardar análisis en MySQL</button>
+          <p id="saveFeedback" class="helper" role="status"></p>
+        </aside>
+      </section>
+
+      <section class="lower-grid">
+        <section class="panel comparison-panel"><div class="section-title-row"><div><p class="eyebrow">COMPARAR TERRITORIOS</p><h2>Escenario A/B</h2></div><span class="data-tag">Datos consultados por ubicación</span></div><div class="comparison-cards"><article class="compare-card compare-a"><div class="compare-card-top"><span class="slot-dot a-dot">A</span><div><strong id="compareAName">Jutiapa, Guatemala</strong><small id="compareACoords">14.291, -89.895</small></div></div><div class="compare-score"><strong id="compareAScore">—</strong><span>/ 100</span></div><div class="mini-meter"><i id="compareABar"></i></div><div id="compareASummary" class="muted-copy">Aún no analizado.</div></article><article class="compare-card compare-b"><div class="compare-card-top"><span class="slot-dot b-dot">B</span><div><strong id="compareBName">Córdoba, España</strong><small id="compareBCoords">37.888, -4.779</small></div></div><div class="compare-score"><strong id="compareBScore">—</strong><span>/ 100</span></div><div class="mini-meter"><i id="compareBBar"></i></div><div id="compareBSummary" class="muted-copy">Aún no analizado.</div></article></div><div id="winnerBanner" class="winner-banner">Ejecuta la comparación para ver cuál ubicación obtiene mayor puntuación con los datos disponibles.</div><div class="chart-wrap"><canvas id="comparisonChart" aria-label="Comparación de idoneidad A y B"></canvas></div></section>
+        <section class="panel ranking-panel"><div class="section-title-row"><div><p class="eyebrow">ANÁLISIS PERSISTIDOS</p><h2>Ranking de idoneidad</h2></div><button id="refreshRankingBtn" class="small-tool">↻ Actualizar</button></div><p class="panel-description">Top de análisis guardados en la base local. La lista empieza vacía en una instalación nueva.</p><div id="rankingList" class="ranking-list"><div class="empty-state">Todavía no hay análisis guardados.</div></div><div class="species-rank-heading"><h3>Promedio por especie</h3><span class="source-state">ANÁLISIS GUARDADOS</span></div><div id="speciesRankingList" class="ranking-list compact-ranking"><div class="empty-state">Aún no hay promedios por especie.</div></div><div class="history-heading"><h3>Historial reciente</h3><span id="historyCount" class="source-state">0 REGISTROS</span></div><p class="helper history-hint">Ver carga el snapshot en el escenario activo. Usa A y B en dos registros para restaurar una comparación guardada en la gráfica sin volver a consultar las APIs.</p><div id="historyList" class="history-list"><div class="empty-state">El historial aparecerá aquí.</div></div></section>
+      </section>
+
+      <section class="source-strip panel"><div><p class="eyebrow">TRANSPARENCIA DE DATOS</p><h2>Qué aporta cada fuente</h2></div><div class="source-item"><strong>Open-Meteo</strong><span>Temperatura, precipitación prevista, radiación y ET₀ a corto plazo.</span><a href="https://open-meteo.com/en/docs" target="_blank" rel="noopener">Documentación ↗</a></div><div class="source-item"><strong>NASA POWER</strong><span>Resumen del año calendario anterior: temperatura, precipitación y radiación diaria.</span><a href="https://power.larc.nasa.gov/docs/services/api/temporal/daily/" target="_blank" rel="noopener">Documentación ↗</a></div><div class="source-item"><strong>GBIF</strong><span>Registros de ocurrencia georreferenciados y clave taxonómica.</span><a href="https://techdocs.gbif.org/en/openapi/v1/occurrence" target="_blank" rel="noopener">Documentación ↗</a></div><div class="source-item"><strong>SoilGrids / ISRIC</strong><span>Propiedades de suelo a escala global; puede estar temporalmente no disponible.</span><a href="https://rest.isric.org/soilgrids/v2.0/docs" target="_blank" rel="noopener">Estado y docs ↗</a></div></section>
+    </main>
+    <footer class="footer"><span>PHYTOATLAS · PRÁCTICA 06</span><span>Los índices son educativos y no sustituyen análisis de campo ni asesoría agronómica.</span><span id="footerDbStatus">Conectando con el servidor…</span></footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

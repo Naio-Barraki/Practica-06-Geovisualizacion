@@ -1,0 +1,12 @@
+Corrección de la API geoespacial
+
+Reemplaza api/index.php en tu proyecto practica-06-geovisualizacion por el archivo de este parche.
+
+Cambios:
+- Corrige la llamada providerUnavailableMessage($provider) en el manejo de errores de proveedores.
+- Registra el código y el detalle de cURL en la terminal del servidor para diagnosticar fallos externos sin exponerlos al navegador.
+
+Después reinicia el servidor PHP y vuelve a probar:
+http://127.0.0.1:8000/api/geo/buscar?name=Guadalajara%2C%20Mexico
+
+Si sigue fallando, consulta la terminal donde corre `php -S ... router.php` y comparte la nueva línea `[practica06-provider:open-meteo-geocoding]`.
